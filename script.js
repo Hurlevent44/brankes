@@ -6,7 +6,7 @@
 const CONFIG = {
   controlBaseUrl: "https://brankes.duckdns.org:8443",
   // Exemple une fois l'ESP32 pret : "http://brankes.duckdns.org:8080"
-  wakeUrl: null,
+  wakeUrl: "http://192.168.0.9",
 };
 
 const TOKEN_STORAGE_KEY = "vs-control-token";
