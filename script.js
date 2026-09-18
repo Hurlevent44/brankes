@@ -5,8 +5,7 @@
 // ---------------------------------------------------------------
 const CONFIG = {
   controlBaseUrl: "https://brankes.duckdns.org:8443",
-  // Exemple une fois l'ESP32 pret : "http://brankes.duckdns.org:8080"
-  wakeUrl: "http://192.168.0.9",
+  wakeUrl: "http://brankes.duckdns.org:8090",
 };
 
 const TOKEN_STORAGE_KEY = "vs-control-token";
@@ -102,13 +101,15 @@ async function runControl(action) {
 
 async function runWake() {
   setButtonState("Envoi en cours…", { disabled: true });
-  try {
-    const res = await fetch(`${CONFIG.wakeUrl}/wake`, { signal: AbortSignal.timeout(5000) });
-    if (!res.ok) throw new Error("failed");
-    setNote("Ça peut prendre 30 à 60 secondes avant que la machine réponde.");
-  } catch (err) {
-    setNote("L'ESP32 n'a pas répondu.");
-  }
+  // fetch() serait bloque par le navigateur (contenu mixte HTTPS -> HTTP),
+  // mais une vraie navigation reste autorisee : on ouvre un onglet qui se
+  // referme tout seul aussitot le signal envoye.
+  const popup = window.open(`${CONFIG.wakeUrl}/wake`, "_blank", "width=250,height=150");
+  setTimeout(() => { if (popup && !popup.closed) popup.close(); }, 1000);
+  setNote("Signal envoyé, ça peut prendre 30 à 60 secondes avant que la machine réponde.");
+  setTimeout(() => {
+    setButtonState("Réveiller le serveur", { onClick: () => runWake() });
+  }, 4000);
 }
 
 async function runPoweroff() {
